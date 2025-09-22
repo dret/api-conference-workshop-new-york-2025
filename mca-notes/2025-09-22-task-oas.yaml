@@ -1,0 +1,268 @@
+openapi: 3.1.0
+info:
+  title: Tasks API
+  version: 1.0.0
+  description: >
+    Derived from the API story: Resources (states) advertise available Actions.
+    Actions map to HTTP methods by TYPE (Safe→GET, Unsafe→POST, Idempotent→PATCH/PUT).
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Home
+  - name: TaskCollection
+  - name: TaskItem
+paths:
+  /:
+    get:
+      tags: [Home]
+      operationId: showHomePage
+      summary: ShowHomePage (Safe → GET)
+      responses:
+        '200':
+          description: Home
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Home'
+          links:
+            getTaskList:
+              operationId: getTaskCollection
+            getFilteredTaskList:
+              operationId: getTaskCollection
+              parameters:
+                title: $request.query.title
+                dueDate: $request.query.dueDate
+                status: $request.query.status
+                priority: $request.query.priority
+                assignedUser: $request.query.assignedUser
+            showHome:
+              operationId: showHomePage
+        '500': { $ref: '#/components/responses/Problem' }
+
+  /tasks:
+    get:
+      tags: [TaskCollection]
+      operationId: getTaskCollection
+      summary: GetTaskCollection (Safe → GET)
+      parameters:
+        - name: title
+          in: query
+          schema: { type: string }
+        - name: dueDate
+          in: query
+          description: Filter by due date (YYYY-MM-DD)
+          schema: { type: string, format: date }
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, completed] }
+        - name: priority
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 5 }
+        - name: assignedUser
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: TaskCollection
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Task' }
+          links:
+            getTaskItem:
+              operationId: getTaskItem
+              parameters:
+                id: '$response.body#/0/id'
+            showHome:
+              operationId: showHomePage
+        '400': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    post:
+      tags: [TaskCollection]
+      operationId: createNewTask
+      summary: CreateNewTask (Unsafe → POST /tasks)
+      description: Client supplies a unique id (per Rules).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskCreate' } # REQUIRED: id, title, status
+            examples:
+              create:
+                value:
+                  id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                  title: "Email follow-up"
+                  description: "Reply to ACME"
+                  dueDate: "2025-10-01"
+                  status: "active"
+                  priority: 3
+                  assignedUser: "alice"
+      responses:
+        '201':
+          description: Created → returns TaskCollection
+          headers:
+            Location:
+              description: URL of the collection
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Task' }
+          links:
+            getTaskItem:
+              operationId: getTaskItem
+              parameters:
+                id: '$response.body#/0/id'
+            showHome:
+              operationId: showHomePage
+        '400': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+  /tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [TaskItem]
+      operationId: getTaskItem
+      summary: GetTaskItem (Safe → GET /tasks/{id})
+      responses:
+        '200':
+          description: TaskItem
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+          links:
+            showHome: { operationId: showHomePage }
+            getTaskList: { operationId: getTaskCollection }
+        '404': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    # EditExistingTask (story marks as Unsafe). We model this as POST to the resource.
+    post:
+      tags: [TaskItem]
+      operationId: editExistingTask
+      summary: EditExistingTask (Unsafe → POST /tasks/{id})
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskUpdate' } # REQUIRED: id, title, status
+      responses:
+        '200':
+          description: TaskItem
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    # Idempotent field updates as PATCH variants:
+    patch:
+      tags: [TaskItem]
+      operationId: patchTask
+      summary: UpdateStatusOfTask / SetDueDateOfTask / AssignUserToTask (Idempotent → PATCH /tasks/{id})
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: '#/components/schemas/TaskPatchStatus'     # UpdateStatusOfTask (Required: id, status)
+                - $ref: '#/components/schemas/TaskPatchDueDate'    # SetDueDateOfTask (Required: id, dueDate)
+                - $ref: '#/components/schemas/TaskPatchAssignee'   # AssignUserToTask (Required: id, assignedUser)
+            examples:
+              setStatus: { value: { status: "completed" } }
+              setDue:    { value: { dueDate: "2025-10-15" } }
+              assign:    { value: { assignedUser: "bob" } }
+      responses:
+        '200':
+          description: TaskItem
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+          links:
+            showHome: { operationId: showHomePage }
+            getTaskList: { operationId: getTaskCollection }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+components:
+  schemas:
+    Home:
+      type: object
+      properties:
+        message: { type: string, example: "Welcome to the Tasks API" }
+
+    Task:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        title:       { type: string }
+        description: { type: string }
+        dueDate:     { type: string, format: date }   # story says [date]
+        status:      { type: string, enum: [active, completed] }
+        priority:    { type: integer, minimum: 1, maximum: 5 }
+        assignedUser:{ type: string }
+      required: [id, title, status]
+
+    TaskCreate:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        title:       { type: string }
+        description: { type: string }
+        dueDate:     { type: string, format: date }
+        status:      { type: string, enum: [active, completed] }
+        priority:    { type: integer, minimum: 1, maximum: 5 }
+        assignedUser:{ type: string }
+      required: [id, title, status]
+
+    TaskUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+      required: [id, title, status]
+
+    TaskPatchStatus:
+      type: object
+      properties:
+        status: { type: string, enum: [active, completed] }
+      required: [status]
+
+    TaskPatchDueDate:
+      type: object
+      properties:
+        dueDate: { type: string, format: date }
+      required: [dueDate]
+
+    TaskPatchAssignee:
+      type: object
+      properties:
+        assignedUser: { type: string }
+      required: [assignedUser]
+
+    Problem:
+      type: object
+      properties:
+        type:   { type: string, format: uri, example: "about:blank" }
+        title:  { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+
+  responses:
+    Problem:
+      description: Error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+

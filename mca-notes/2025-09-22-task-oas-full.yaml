@@ -1,0 +1,459 @@
+
+openapi: 3.1.0
+info:
+  title: Tasks API
+  version: 1.0.0
+  description: |
+    We need to track 'Task' records in order to improve both timeliness and accuracy of customer follow-up activity.
+    This specification is derived from the API Story document and preserves its narrative in summaries and descriptions.
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Home
+    description: The home or landing page of the API. Users typically start here.
+  - name: TaskCollection
+    description: The list of tasks in the system are displayed here.
+  - name: TaskItem
+    description: This resource shows a single task selected from the TaskCollection.
+paths:
+  /:
+    get:
+      tags: [Home]
+      operationId: showHomePage
+      summary: Show the API home page
+      description: Display the Home resource.
+      responses:
+        '200':
+          description: Home
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Home'
+              examples:
+                home:
+                  value:
+                    message: "Welcome to the Tasks API"
+                    links:
+                      tasks: "/tasks"
+        '500': { $ref: '#/components/responses/Problem' }
+
+  /tasks:
+    get:
+      tags: [TaskCollection]
+      operationId: getTaskCollection
+      summary: Get the list of all Task records
+      description: |
+        Use this action to return a list of all Task records in the system.
+        Optional filtering is available by title, dueDate, status, priority, and assignedUser.
+      parameters:
+        - $ref: '#/components/parameters/title'
+        - $ref: '#/components/parameters/dueDate'
+        - $ref: '#/components/parameters/status'
+        - $ref: '#/components/parameters/priority'
+        - $ref: '#/components/parameters/assignedUser'
+      responses:
+        '200':
+          description: TaskCollection
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Task' }
+              examples:
+                sampleList:
+                  value:
+                    - id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                      title: "Email follow-up"
+                      description: "Reply to ACME procurement"
+                      dueDate: "2025-10-01"
+                      status: "active"
+                      priority: 3
+                      assignedUser: "alice"
+                    - id: "f1cbbf0b-8f7a-4b9c-b4f8-2a4b0d0db222"
+                      title: "Prepare Q4 deck"
+                      description: "Draft slides for Q4 customer review"
+                      dueDate: "2025-11-15"
+                      status: "active"
+                      priority: 2
+                      assignedUser: "bob"
+          links:
+            showHome:
+              operationId: showHomePage
+        '400': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    post:
+      tags: [TaskCollection]
+      operationId: createNewTask
+      summary: Create a new Task
+      description: |
+        Use this action to add a new Task record to the system.
+        Rule: When executing CreateNewTask, the client should supply a unique `id` value.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskCreate' }
+            examples:
+              create:
+                summary: Minimal valid creation payload
+                value:
+                  id: "3d0c1e4e-9d0c-47a3-98ab-19f2ce1b9e77"
+                  title: "Call supplier"
+                  status: "active"
+      responses:
+        '201':
+          description: TaskCollection returned after successful creation
+          headers:
+            Location:
+              description: URL of the collection
+              schema: { type: string }
+              example: "/tasks"
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Task' }
+              examples:
+                afterCreate:
+                  value:
+                    - id: "3d0c1e4e-9d0c-47a3-98ab-19f2ce1b9e77"
+                      title: "Call supplier"
+                      description: null
+                      dueDate: null
+                      status: "active"
+                      priority: 3
+                      assignedUser: null
+          links:
+            showHome:
+              operationId: showHomePage
+        '400': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+  /tasks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [TaskItem]
+      operationId: getTaskItem
+      summary: Get a single Task by id
+      description: Use this action to get a single existing task record.
+      responses:
+        '200':
+          description: TaskItem
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+              examples:
+                item:
+                  value:
+                    id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                    title: "Email follow-up"
+                    description: "Reply to ACME procurement"
+                    dueDate: "2025-10-01"
+                    status: "active"
+                    priority: 3
+                    assignedUser: "alice"
+          links:
+            getTaskList:
+              operationId: getTaskCollection
+            showHome:
+              operationId: showHomePage
+        '404': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    post:
+      tags: [TaskItem]
+      operationId: editExistingTask
+      summary: Edit an existing Task (unsafe)
+      description: Modify an existing Task record (full or partial payload accepted by server logic).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskUpdate' }
+            examples:
+              edit:
+                value:
+                  id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                  title: "Email follow-up — urgent"
+                  description: "Reply to ACME procurement with pricing update"
+                  dueDate: "2025-10-02"
+                  status: "active"
+                  priority: 4
+                  assignedUser: "alice"
+      responses:
+        '200':
+          description: TaskItem after edit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+              examples:
+                edited:
+                  value:
+                    id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                    title: "Email follow-up — urgent"
+                    description: "Reply to ACME procurement with pricing update"
+                    dueDate: "2025-10-02"
+                    status: "active"
+                    priority: 4
+                    assignedUser: "alice"
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+    patch:
+      tags: [TaskItem]
+      operationId: patchTask
+      summary: Update specific fields on a Task (idempotent)
+      description: |
+        Idempotent field updates modeled as PATCH:
+        - UpdateStatusOfTask: set `status`
+        - SetDueDateOfTask: set `dueDate`
+        - AssignUserToTask: set `assignedUser`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: '#/components/schemas/TaskPatchStatus'
+                - $ref: '#/components/schemas/TaskPatchDueDate'
+                - $ref: '#/components/schemas/TaskPatchAssignee'
+            examples:
+              setStatus:
+                summary: Mark task as completed
+                value: { status: "completed" }
+              setDueDate:
+                summary: Push due date
+                value: { dueDate: "2025-10-15" }
+              assignUser:
+                summary: Assign to Bob
+                value: { assignedUser: "bob" }
+      responses:
+        '200':
+          description: TaskItem after patch
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+              examples:
+                patchedStatus:
+                  value:
+                    id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+                    title: "Email follow-up — urgent"
+                    description: "Reply to ACME procurement with pricing update"
+                    dueDate: "2025-10-02"
+                    status: "completed"
+                    priority: 4
+                    assignedUser: "alice"
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '500': { $ref: '#/components/responses/Problem' }
+
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+      description: The unique identifier of the Task.
+      example: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+    title:
+      name: title
+      in: query
+      description: Filter by title (substring match).
+      schema: { type: string }
+      example: "Email"
+    dueDate:
+      name: dueDate
+      in: query
+      description: Filter by due date (YYYY-MM-DD).
+      schema: { type: string, format: date }
+      example: "2025-10-01"
+    status:
+      name: status
+      in: query
+      description: Filter by status.
+      schema: { type: string, enum: [active, completed] }
+      example: "active"
+    priority:
+      name: priority
+      in: query
+      description: Filter by priority (1–5).
+      schema: { type: integer, minimum: 1, maximum: 5 }
+      example: 3
+    assignedUser:
+      name: assignedUser
+      in: query
+      description: Filter by assigned user (simple name string).
+      schema: { type: string }
+      example: "alice"
+
+  schemas:
+    Home:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A friendly message to welcome clients to the API.
+          example: "Welcome to the Tasks API"
+        links:
+          type: object
+          description: Optional navigation hints (URIs).
+          additionalProperties: true
+          example:
+            tasks: "/tasks"
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: A globally unique value for each record.
+          example: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+        title:
+          type: string
+          description: The text content of the record (the title of the task).
+          example: "Email follow-up"
+        description:
+          type: [string, "null"]
+          description: The description of the record (the task details).
+          example: "Reply to ACME procurement"
+        dueDate:
+          type: [string, "null"]
+          format: date
+          description: The date the record is due to be completed.
+          example: "2025-10-01"
+        status:
+          type: string
+          description: Indicates the status of the record.
+          enum: [active, completed]
+          example: "active"
+        priority:
+          type: integer
+          description: The priority of the task (a number between 1 and 5).
+          minimum: 1
+          maximum: 5
+          example: 3
+        assignedUser:
+          type: [string, "null"]
+          description: The user assigned to handle the task (a simple name string).
+          example: "alice"
+      required: [id, title, status]
+      examples:
+        default:
+          value:
+            id: "f1cbbf0b-8f7a-4b9c-b4f8-2a4b0d0db222"
+            title: "Prepare Q4 deck"
+            description: "Draft slides for Q4 customer review"
+            dueDate: "2025-11-15"
+            status: "active"
+            priority: 2
+            assignedUser: "bob"
+
+    TaskCreate:
+      type: object
+      description: Payload for creating a Task; client supplies a unique id.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: A globally unique value for the new record.
+          example: "3d0c1e4e-9d0c-47a3-98ab-19f2ce1b9e77"
+        title:
+          type: string
+          description: The text content of the record (the title of the task).
+          example: "Call supplier"
+        description:
+          type: [string, "null"]
+          description: The description of the record (the task details).
+          example: "Discuss shipment delays"
+        dueDate:
+          type: [string, "null"]
+          format: date
+          description: The date the record is due to be completed.
+          example: "2025-10-05"
+        status:
+          type: string
+          description: Indicates the status of the record.
+          enum: [active, completed]
+          example: "active"
+        priority:
+          type: integer
+          description: The priority of the task (a number between 1 and 5).
+          minimum: 1
+          maximum: 5
+          example: 3
+        assignedUser:
+          type: [string, "null"]
+          description: The user assigned to handle the task (a simple name string).
+          example: "alice"
+      required: [id, title, status]
+
+    TaskUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+      description: Payload for editing an existing Task (unsafe POST to /tasks/{id}).
+      examples:
+        update:
+          value:
+            id: "7a2c8aa0-66b6-42a9-9c1e-8c3f3c33a9b1"
+            title: "Email follow-up — urgent"
+            description: "Reply to ACME procurement with pricing update"
+            dueDate: "2025-10-02"
+            status: "active"
+            priority: 4
+            assignedUser: "alice"
+
+    TaskPatchStatus:
+      type: object
+      description: Payload for updating the status of a Task.
+      properties:
+        status:
+          type: string
+          enum: [active, completed]
+          description: New status for the task.
+          example: "completed"
+      required: [status]
+
+    TaskPatchDueDate:
+      type: object
+      description: Payload for setting the due date of a Task.
+      properties:
+        dueDate:
+          type: string
+          format: date
+          description: New due date (YYYY-MM-DD).
+          example: "2025-10-15"
+      required: [dueDate]
+
+    TaskPatchAssignee:
+      type: object
+      description: Payload for assigning the Task to a user.
+      properties:
+        assignedUser:
+          type: string
+          description: The name of the user to assign.
+          example: "bob"
+      required: [assignedUser]
+
+    Problem:
+      type: object
+      description: RFC 7807 problem details.
+      properties:
+        type:   { type: string, format: uri, example: "about:blank" }
+        title:  { type: string, example: "Bad Request" }
+        status: { type: integer, example: 400 }
+        detail: { type: string, example: "Invalid filter value for 'status'." }
+        instance: { type: string, format: uri, example: "/tasks?status=done" }
+
+  responses:
+    Problem:
+      description: Error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
