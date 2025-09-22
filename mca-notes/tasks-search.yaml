@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Task Management API
+  version: 1.0.0
+  description: OpenAPI specification generated from ALPS profile for task tracking.
+paths:
+  /goShowHomePage:
+    get:
+      operationId: goShowHomePage
+      summary: Go to Home
+      description: ''
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Home'
+        '400':
+          description: Invalid input
+        '404':
+          description: Resource not found
+      tags:
+        - navigation
+      parameters: []
+  /goGetTaskCollection:
+    get:
+      operationId: goGetTaskCollection
+      summary: Get Task Collection
+      description: ''
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCollection'
+        '400':
+          description: Invalid input
+        '404':
+          description: Resource not found
+      tags:
+        - task-management
+      parameters: []
+  '/goGetTaskItem/{id}':
+    get:
+      operationId: goGetTaskItem
+      summary: Get Task Item
+      description: 'Required: id'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskItem'
+        '400':
+          description: Invalid input
+        '404':
+          description: Resource not found
+      tags:
+        - task-management
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: A globally unique identifier for each task record.
+  /goGetFilteredTaskCollection:
+    get:
+      operationId: goGetFilteredTaskCollection
+      summary: Filter Task Collection
+      description: ''
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCollection'
+        '400':
+          description: Invalid input
+        '404':
+          description: Resource not found
+      tags:
+        - task-management
+      parameters:
+        - name: title
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Short title or name of the task.
+        - name: dueDate
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Deadline by which the task should be completed.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Current state of the task (active or completed).
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 'Task importance, typically from 1 (lowest) to 5 (highest).'
+        - name: assignedUser
+          in: query
+          required: false
+          schema:
+            type: string
+          description: User responsible for completing the task.
+components:
+  schemas:
+    TaskItem:
+      type: object
+      properties:
+        id:
+          type: string
+          title: Identifier
+          description: A globally unique identifier for each task record.
+          example: fe72734f-939c-4cd1-a4e3-85d88a4979af
+          format: uuid
+        title:
+          type: string
+          title: Title
+          description: Short title or name of the task.
+          example: example-title
+        description:
+          type: string
+          title: Description
+          description: Detailed description of the task.
+          example: example-description
+        dueDate:
+          type: string
+          title: Due Date
+          description: Deadline by which the task should be completed.
+          example: '2025-09-01'
+          format: date
+        status:
+          type: string
+          title: Status
+          description: Current state of the task (active or completed).
+          example: example-status
+        priority:
+          type: string
+          title: Priority
+          description: 'Task importance, typically from 1 (lowest) to 5 (highest).'
+          example: '1'
+        assignedUser:
+          type: string
+          title: Assigned User
+          description: User responsible for completing the task.
+          example: user01
+      required:
+        - id
+        - title
+        - status
+    TaskCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/TaskItem'
+    Home:
+      type: object
+      properties:
+        home:
+          type: string
+          format: uri
+          example: 'https://localhost:4000/goShowHomePage'
+        collection:
+          type: string
+          format: uri
+          example: 'https://localhost:4000/goGetTaskCollection'
+        search:
+          type: string
+          format: uri
+          example: 'https://localhost:4000/goGetFilteredTaskCollection'
+tags:
+  - name: navigation
+  - name: task-management
+

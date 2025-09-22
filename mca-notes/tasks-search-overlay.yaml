@@ -1,0 +1,24 @@
+# overlay.yaml
+#
+# remove write operations to create a read-only search profile
+#
+    overlay: 1.0.0
+    info:
+      title: Remove non-search elements
+      version: 1.0.0
+    actions:
+      - target: $.paths['/doCreateNewTask'] # Target a specific path
+        remove: true
+      - target: $.paths['/doEditExistingTask'] # Target a specific path
+        remove: true
+      - target: $.paths['/doUpdateStatusOfTask'] # Target a specific path
+        remove: true
+      - target: $.paths['/doSetDueDateOfTask'] # Target a specific path
+        remove: true
+      - target: $.paths['/doAssignUserToTask'] # Target a specific path
+        remove: true
+
+
+
+
+
