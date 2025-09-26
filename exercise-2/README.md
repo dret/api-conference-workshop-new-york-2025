@@ -1,4 +1,4 @@
-# API Conference New York 2025: Exercise 2
+# API Conference New York 2025: Exercise 2 (API Stories)
 
 This folder contains content for the **API Story** Unit
 
