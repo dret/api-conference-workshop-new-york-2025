@@ -1,0 +1,30 @@
+# overlay.yaml
+#
+# update example values for properties
+#
+overlay: 1.0.0
+info:
+  title: update example values for properties
+  version: 1.0.0
+actions:
+- target: $.components.schemas.Title.example
+  update: Work to do
+  
+- target: $.components.schemas.Description.example
+  update: lots of misc incomplete work
+  
+- target: $.components.schemas.Title.DueDate.example
+  update: 2025-12-31
+  
+- target: $.components.schemas.Title.Status.example
+  update: active
+  
+- target: $.components.schemas.Title.Priority.example
+  update: '1'
+  
+- target: $.components.schemas.Title.AssignedUser.example
+  update: user99
+  
+  
+  
+
