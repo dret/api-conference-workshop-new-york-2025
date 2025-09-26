@@ -1,1 +1,1 @@
-# API Conference New York 2025: Exercise 3
+# API Conference New York 2025: Exercise 3 (OpenAPI)
