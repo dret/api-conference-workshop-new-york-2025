@@ -12,7 +12,7 @@ There are several ways to approach this exercise, depending on your preference a
 
 The goal at the end of this exercise is to have a relatively well-formed OpenAPI description. At the same time, the goal is to play around with OpenAPI concepts and OpenAPI tooling, and to get a bit of experience with handling OpenAPI
 
-As a backup, here are the well-known "Pet Store" examples often used in OpenAPI materials as OpenAPI descriptions:
+As a backup, here are the well-known "Pet Store" examples often used in OpenAPI examples and training materials as OpenAPI descriptions:
 
 - [Petstore OpenAPI in YAML](petstore.openapi.yaml)
 - [Petstore OpenAPI in JSON](petstore.openapi.json)
