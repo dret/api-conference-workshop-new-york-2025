@@ -1,0 +1,12 @@
+# overlay.yaml
+#
+# remove assign user path
+#
+overlay: 1.0.0
+info:
+  title: remove assign user path
+  version: 1.0.0
+actions:
+- target: $.paths['/doAssignUserToTask']
+  remove: true 
+
