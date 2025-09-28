@@ -27,7 +27,7 @@ This repo contains _exercises_ and _materials_ for the **"Practical API Manageme
 - 13.50-14.10: [API Versioning](http://dret.net/lectures/apicon-new-york-2025/workshop-api-versioning)
 - 14.10-14.30: [Exercise 5 (Versioning)](./exercise-5)
 - 14.30-14.50: [API Overlay](http://dret.net/lectures/apicon-new-york-2025/workshop-openapi-overlay)
-- 14.50-15.10: [Exercise 6 (Overlay)](./exercise-6)
+- 14.50-15.00: [Exercise 6 (Overlay)](./exercise-6)
 
 
 ### 15:30-17:00
