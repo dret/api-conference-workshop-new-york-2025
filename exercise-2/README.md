@@ -2,7 +2,7 @@
 
 This folder contains content for the **API Story** Unit
 
-* tasks-api-story.md : completed story document
-* tasks-openapi.yaml : OpenAPI document to match the story document
-* my-api-story.yaml : API Story document template
+* [`tasks-api-story.md`](tasks-api-story.md) : completed story document
+* [`tasks-openapi.yaml`](tasks-openapi.yaml) : OpenAPI document to match the story document
+* [`my-api-story.yaml`](my-api-story.yaml) : API Story document template
 
