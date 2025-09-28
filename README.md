@@ -32,8 +32,8 @@ This repo contains _exercises_ and _materials_ for the **"Practical API Manageme
 
 ### 15:30-17:00
 
-- 15.30-15.50: [API Mocking](http://dret.net/lectures/apicon-new-york-2025/workshop-api-mocking)
-- 15.50-16.10: [Exercise 7 (Mocking)](./exercise-7)
+- 15.30-15.50: [Error Messages for HTTP APIs](http://dret.net/lectures/apicon-new-york-2025/workshop-error-messages)
+- 15.50-16.10: [Exercise 7 (Error Messages)](./exercise-7)
 - 16.10-16.30: [Building API Workflows with Arazzo](http://dret.net/lectures/apicon-new-york-2025/workshop-arazzo)
 - 16.30-16.50: [Exercise 8 (Workflows and Arazzo)](./exercise-8)
 
