@@ -27,16 +27,14 @@ This repo contains _exercises_ and _materials_ for the **"Practical API Manageme
 - 13.50-14.10: [API Versioning](http://dret.net/lectures/apicon-new-york-2025/workshop-api-versioning)
 - 14.10-14.30: [Exercise 5 (Versioning)](./exercise-5)
 - 14.30-14.50: [API Overlay](http://dret.net/lectures/apicon-new-york-2025/workshop-openapi-overlay)
-- 14.50-15.00: [Exercise 6 (Overlay)](./exercise-6)
 
 
 ### 15:30-17:00
 
-- 15.30-15.50: [Error Messages for HTTP APIs](http://dret.net/lectures/apicon-new-york-2025/workshop-error-messages)
-- 15.50-16.10: [Exercise 7 (Error Messages)](./exercise-7)
-- 16.10-16.30: [Building API Workflows with Arazzo](http://dret.net/lectures/apicon-new-york-2025/workshop-arazzo)
-- 16.30-16.50: [Exercise 8 (Workflows and Arazzo)](./exercise-8)
-
+- 15.30-15.40: [Exercise 6 (Overlay)](./exercise-6)
+- 15.40-16.10: [Error Messages for HTTP APIs](http://dret.net/lectures/apicon-new-york-2025/workshop-error-messages)
+- 16.10-16.30: [Exercise 7 (Error Messages)](./exercise-7)
+- 16.30-16.50: [Building API Workflows with Arazzo](http://dret.net/lectures/apicon-new-york-2025/workshop-arazzo)
 
 
 ## Slides
