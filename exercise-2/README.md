@@ -1,6 +1,6 @@
 # API Conference New York 2025: Exercise 2 (API Stories)
 
-This folder contains content for the **API Story** Unit
+This folder contains content for the **API Stories** Unit
 
 ## Existing documents:
 
@@ -15,14 +15,12 @@ This folder contains content for the **API Story** Unit
 
 ## Steps:
 
-* Replace "My API Story" with the name of your API (e.g. Task Mangement API, etc.)
+* Replace "My API Story" with the name of your API (e.g. Task Management API, etc.)
 * Fill in the *Purpose* section  with a simple description statement
-* Update the *Data Propertes* section with additional fields to define an object (e.g. task)
+* Update the *Data Properties* section with additional fields to define an object (e.g. task)
 * Update the *Resources* section with proper names (for collection and item)
 * In the *Resources* section, include one or more *Action* names (e.g. ShowHomePage, DeleteTask, etc.)
 * in the *Actions* section define each of the actions listed in the *Resources* section
 * Optionally, update the *Rules* section with additional limits, etc.
 
 Use the completed Tasks Management API Story document as a guide.
-
-
