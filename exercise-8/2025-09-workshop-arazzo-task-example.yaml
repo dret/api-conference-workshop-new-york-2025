@@ -1,0 +1,114 @@
+arazzo: 1.0.1
+
+info:
+  title: Task Management Workflow
+  summary: Assign a task, check its status, then complete it.
+  description: >
+    Arazzo workflow that assigns a task to a user, checks status,
+    and completes it using the Task Management API.
+  version: 1.0.0
+
+sourceDescriptions:
+  - name: taskApi
+    url: task-openapi.yaml
+    type: openapi
+
+components:
+  inputs:
+    TaskContext:
+      type: object
+      required: [userId, taskId, apiKey]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        apiKey:
+          type: string
+          description: API key used for X-Api-Key header
+  parameters:
+    apiKeyHeader:
+      name: X-Api-Key
+      in: header
+      value: $inputs.apiKey
+    taskIdQuery:
+      name: taskId
+      in: query
+      value: $inputs.taskId
+    userIdQuery:
+      name: userId
+      in: query
+      value: $inputs.userId
+  successActions:
+    endOk:
+      name: endOk
+      type: end
+  failureActions:
+    retryOn503:
+      name: retryOn503
+      type: retry
+      retryAfter: 1
+      retryLimit: 2
+      criteria:
+        - condition: $statusCode == 503
+
+workflows:
+  - workflowId: taskLifecycle
+    summary: Assign → Check → Complete
+    description: Assign a task to a user, poll current status, then complete it.
+    # Reuse the JSON Schema from components via $ref
+    inputs:
+      $ref: '#/components/inputs/TaskContext'
+
+    # Parameters applied to all steps (can be overridden per-step)
+    parameters:
+      - reference: $components.parameters.apiKeyHeader
+
+    steps:
+      - stepId: assign
+        description: Assign the task to the user
+        operationId: assignTask
+        parameters:
+          - reference: $components.parameters.userIdQuery
+          - reference: $components.parameters.taskIdQuery
+        requestBody:
+          contentType: application/json
+          payload: |
+            {
+              "userId": "{$inputs.userId}",
+              "taskId": "{$inputs.taskId}"
+            }
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          assignmentId: $response.body.assignmentId
+
+      - stepId: check
+        description: Fetch current task status
+        operationId: getTaskStatus
+        parameters:
+          - reference: $components.parameters.taskIdQuery
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          status: $response.body.status
+
+      - stepId: complete
+        description: Mark the task as complete
+        operationId: completeTask
+        parameters:
+          - reference: $components.parameters.taskIdQuery
+        successCriteria:
+          - condition: $statusCode == 200
+        failureActions:
+          - reference: $components.failureActions.retryOn503
+        outputs:
+          confirmation: $response.body
+
+    outputs:
+      assignmentId: $steps.assign.outputs.assignmentId
+      status: $steps.check.outputs.status
+      completed: $steps.complete.outputs.confirmation
+
