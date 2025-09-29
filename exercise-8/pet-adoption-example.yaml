@@ -1,0 +1,88 @@
+arazzo: 1.0.0
+info:
+  title: Pet Adoption Workflow
+  summary: This Arazzo Description outlines the steps for adopting a pet.
+  description: |
+    This workflow details the process of searching for an available pet,
+    initiating an adoption request, and confirming the adoption status.
+sourceDescriptions:
+  - sourceId: petStoreAPI
+    type: openapi
+    url: https://petstore.swagger.io/v2/swagger.json
+workflows:
+  - workflowId: adoptPet
+    summary: Adopt a specific pet
+    description: |
+      This workflow allows a user to adopt a pet by first searching for it,
+      then placing an order, and finally confirming the order status.
+    inputs:
+      petId:
+        type: integer
+        description: The ID of the pet to adopt.
+      userId:
+        type: string
+        description: The ID of the user adopting the pet.
+    steps:
+      - stepId: findPetById
+        summary: Find the pet by its ID
+        operationId: getPetById # Refers to an operation in the petStoreAPI source
+        source: petStoreAPI
+        parameters:
+          path:
+            petId: $inputs.petId
+        successCriteria:
+          - statusCode == 200
+          - responseBody.status == "available"
+        failureActions:
+          - type: endWorkflow
+            reason: Pet not found or not available.
+      - stepId: placeOrder
+        summary: Place an order for the pet
+        operationId: placeOrder # Refers to an operation in the petStoreAPI source
+        source: petStoreAPI
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  petId:
+                    type: integer
+                  quantity:
+                    type: integer
+                  shipDate:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                  complete:
+                    type: boolean
+              example:
+                petId: $steps.findPetById.outputs.id
+                quantity: 1
+                shipDate: "2025-10-01T10:00:00Z"
+                status: "placed"
+                complete: false
+        successCriteria:
+          - statusCode == 200
+        failureActions:
+          - type: retry
+            retryAfter: 5s
+            retryLimit: 3
+            criteria:
+              - statusCode == 503
+          - type: endWorkflow
+            reason: Failed to place order after retries.
+      - stepId: checkOrderStatus
+        summary: Check the status of the placed order
+        operationId: getOrderById # Refers to an operation in the petStoreAPI source
+        source: petStoreAPI
+        parameters:
+          path:
+            orderId: $steps.placeOrder.outputs.id # Using output from previous step
+        successCriteria:
+          - statusCode == 200
+          - responseBody.status == "approved"
+        failureActions:
+          - type: endWorkflow
+            reason: Order not approved.
