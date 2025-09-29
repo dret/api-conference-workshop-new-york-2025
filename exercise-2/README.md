@@ -24,3 +24,7 @@ This folder contains content for the **API Stories** Unit
 * Optionally, update the *Rules* section with additional limits, etc.
 
 Use the completed Tasks Management API Story document as a guide.
+
+## Vibe Coding your API Story into OpenAPI
+
+* Check out the llm-context folder for how you can convert your API Story document into an OpenAPI file.
